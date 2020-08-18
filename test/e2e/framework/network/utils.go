@@ -136,10 +136,12 @@ type NetworkingTestConfig struct {
 	podClient    *framework.PodClient
 	// NodePortService is a Service with Type=NodePort spanning over all
 	// endpointPods.
-	NodePortService *v1.Service
+	NodePortHTTPService *v1.Service
+	NodePortUDPService  *v1.Service
 	// SessionAffinityService is a Service with SessionAffinity=ClientIP
 	// spanning over all endpointPods.
-	SessionAffinityService *v1.Service
+	SessionAffinityHTTPService *v1.Service
+	SessionAffinityUDPService  *v1.Service
 	// ExternalAddrs is a list of external IPs of nodes in the cluster.
 	ExternalAddr string
 	// Nodes is a list of nodes in the cluster.
@@ -584,43 +586,60 @@ func (config *NetworkingTestConfig) createTestPodSpec() *v1.Pod {
 	return pod
 }
 
-func (config *NetworkingTestConfig) createNodePortServiceSpec(svcName string, selector map[string]string, enableSessionAffinity bool) *v1.Service {
+func (config *NetworkingTestConfig) createNodePortServiceSpec(svcName string, selector map[string]string, enableSessionAffinity bool) (*v1.Service, *v1.Service) {
 	sessionAffinity := v1.ServiceAffinityNone
 	if enableSessionAffinity {
 		sessionAffinity = v1.ServiceAffinityClientIP
 	}
-	res := &v1.Service{
+
+	httpSvcPort := v1.ServicePort{Port: ClusterHTTPPort, Name: "http", Protocol: v1.ProtocolTCP, TargetPort: intstr.FromInt(EndpointHTTPPort)}
+	udpSvcPort := v1.ServicePort{Port: ClusterHTTPPort, Name: "udp", Protocol: v1.ProtocolUDP, TargetPort: intstr.FromInt(EndpointUDPPort)}
+	res1 := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: svcName,
+			Name: svcName + "http",
 		},
 		Spec: v1.ServiceSpec{
-			Type: v1.ServiceTypeNodePort,
-			Ports: []v1.ServicePort{
-				{Port: ClusterHTTPPort, Name: "http", Protocol: v1.ProtocolTCP, TargetPort: intstr.FromInt(EndpointHTTPPort)},
-				{Port: ClusterUDPPort, Name: "udp", Protocol: v1.ProtocolUDP, TargetPort: intstr.FromInt(EndpointUDPPort)},
-			},
+			Type:            v1.ServiceTypeNodePort,
 			Selector:        selector,
+			Ports:           []v1.ServicePort{httpSvcPort},
 			SessionAffinity: sessionAffinity,
 		},
 	}
 
+	res2 := res1.DeepCopy()
+	res2.Name = svcName + "udp"
+	res2.Spec.Ports = []v1.ServicePort{udpSvcPort}
+
 	if config.SCTPEnabled {
-		res.Spec.Ports = append(res.Spec.Ports, v1.ServicePort{Port: ClusterSCTPPort, Name: "sctp", Protocol: v1.ProtocolSCTP, TargetPort: intstr.FromInt(EndpointSCTPPort)})
+		// Each port needs to be on atleast one service, so just add sctp port to HTTP service
+		res1.Spec.Ports = append(res1.Spec.Ports, v1.ServicePort{Port: ClusterSCTPPort, Name: "sctp", Protocol: v1.ProtocolSCTP, TargetPort: intstr.FromInt(EndpointSCTPPort)})
 	}
-	return res
+	return res1, res2
 }
 
-func (config *NetworkingTestConfig) createNodePortService(selector map[string]string) {
-	config.NodePortService = config.createService(config.createNodePortServiceSpec(nodePortServiceName, selector, false))
+func (config *NetworkingTestConfig) createNodePortServices(selector map[string]string) {
+	httpSvcSpec, udpSvcSpec := config.createNodePortServiceSpec(nodePortServiceName, selector, false)
+	config.NodePortHTTPService = config.createService(httpSvcSpec)
+	config.NodePortUDPService = config.createService(udpSvcSpec)
+	// config.NodePortUDPService = config.createService(config.createNodePortServiceSpec(nodePortServiceName, selector, false))
 }
 
-func (config *NetworkingTestConfig) createSessionAffinityService(selector map[string]string) {
-	config.SessionAffinityService = config.createService(config.createNodePortServiceSpec(sessionAffinityServiceName, selector, true))
+func (config *NetworkingTestConfig) createSessionAffinityServices(selector map[string]string) {
+	httpSvcSpec, udpSvcSpec := config.createNodePortServiceSpec(nodePortServiceName, selector, true)
+	config.SessionAffinityHTTPService = config.createService(httpSvcSpec)
+	config.SessionAffinityUDPService = config.createService(udpSvcSpec)
 }
 
-// DeleteNodePortService deletes NodePort service.
-func (config *NetworkingTestConfig) DeleteNodePortService() {
-	err := config.getServiceClient().Delete(context.TODO(), config.NodePortService.Name, metav1.DeleteOptions{})
+// DeleteNodePortHTTPService deletes HTTP NodePort service.
+func (config *NetworkingTestConfig) DeleteNodePortHTTPService() {
+	err := config.getServiceClient().Delete(context.TODO(), config.NodePortHTTPService.Name, metav1.DeleteOptions{})
+	framework.ExpectNoError(err, "error while deleting NodePortService. err:%v)", err)
+	time.Sleep(15 * time.Second) // wait for kube-proxy to catch up with the service being deleted.
+}
+
+// DeleteNodePortUDPService deletes UDP NodePort service.
+func (config *NetworkingTestConfig) DeleteNodePortUDPService() {
+	err := config.getServiceClient().Delete(context.TODO(), config.NodePortHTTPService.Name, metav1.DeleteOptions{})
 	framework.ExpectNoError(err, "error while deleting NodePortService. err:%v)", err)
 	time.Sleep(15 * time.Second) // wait for kube-proxy to catch up with the service being deleted.
 }
@@ -664,6 +683,11 @@ func (config *NetworkingTestConfig) createService(serviceSpec *v1.Service) *v1.S
 	return createdService
 }
 
+func (config *NetworkingTestConfig) createSecondService(serviceSpec *v1.Service) *v1.Service {
+
+	return *v1.Service{}
+}
+
 // setupCore sets up the pods and core test config
 // mainly for simplified node e2e setup
 func (config *NetworkingTestConfig) setupCore(selector map[string]string) {
@@ -692,8 +716,8 @@ func (config *NetworkingTestConfig) setup(selector map[string]string) {
 	config.Nodes = nodeList.Items
 
 	ginkgo.By("Creating the service on top of the pods in kubernetes")
-	config.createNodePortService(selector)
-	config.createSessionAffinityService(selector)
+	config.createNodePortServices(selector)
+	config.createSessionAffinityServices(selector)
 
 	for _, p := range config.NodePortService.Spec.Ports {
 		switch p.Protocol {

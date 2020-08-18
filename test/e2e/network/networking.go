@@ -208,8 +208,16 @@ var _ = SIGDescribe("Networking", func() {
 			config.DialFromNode("udp", config.NodeIP, config.NodeUDPPort, config.MaxTries, 0, config.EndpointHostnames())
 		})
 
-		ginkgo.It("should function for endpoint-Service: http", func() {
+		ginkgo.FIt("should function for endpoint-Service: http", func() {
 			config := e2enetwork.NewNetworkingTestConfig(f, false, false)
+			ginkgo.By(fmt.Sprintf("dialing(http) %v (endpoint) --> %v:%v (config.clusterIP)", config.EndpointPods[0].Name, config.ClusterIP, e2enetwork.ClusterHTTPPort))
+			config.DialFromEndpointContainer("http", config.ClusterIP, e2enetwork.ClusterHTTPPort, config.MaxTries, 0, config.EndpointHostnames())
+
+			ginkgo.By(fmt.Sprintf("dialing(http) %v (endpoint) --> %v:%v (nodeIP)", config.EndpointPods[0].Name, config.NodeIP, config.NodeHTTPPort))
+			config.DialFromEndpointContainer("http", config.NodeIP, config.NodeHTTPPort, config.MaxTries, 0, config.EndpointHostnames())
+
+			ginkgo.By("even after deleting the udp service")
+			config.DeleteNodePortUDPService()
 			ginkgo.By(fmt.Sprintf("dialing(http) %v (endpoint) --> %v:%v (config.clusterIP)", config.EndpointPods[0].Name, config.ClusterIP, e2enetwork.ClusterHTTPPort))
 			config.DialFromEndpointContainer("http", config.ClusterIP, e2enetwork.ClusterHTTPPort, config.MaxTries, 0, config.EndpointHostnames())
 
@@ -217,8 +225,18 @@ var _ = SIGDescribe("Networking", func() {
 			config.DialFromEndpointContainer("http", config.NodeIP, config.NodeHTTPPort, config.MaxTries, 0, config.EndpointHostnames())
 		})
 
-		ginkgo.It("should function for endpoint-Service: udp", func() {
+		ginkgo.FIt("should function for endpoint-Service: udp", func() {
 			config := e2enetwork.NewNetworkingTestConfig(f, false, false)
+			ginkgo.By(fmt.Sprintf("dialing(udp) %v (endpoint) --> %v:%v (config.clusterIP)", config.EndpointPods[0].Name, config.ClusterIP, e2enetwork.ClusterUDPPort))
+			config.DialFromEndpointContainer("udp", config.ClusterIP, e2enetwork.ClusterUDPPort, config.MaxTries, 0, config.EndpointHostnames())
+
+			ginkgo.By(fmt.Sprintf("dialing(udp) %v (endpoint) --> %v:%v (nodeIP)", config.EndpointPods[0].Name, config.NodeIP, config.NodeUDPPort))
+			config.DialFromEndpointContainer("udp", config.NodeIP, config.NodeUDPPort, config.MaxTries, 0, config.EndpointHostnames())
+
+			// HTTP Service and UDP service point to the same pods, deleting one service should not affect the other service's availability
+			ginkgo.By("even after deleting the http service")
+			config.DeleteNodePortUDPService()
+
 			ginkgo.By(fmt.Sprintf("dialing(udp) %v (endpoint) --> %v:%v (config.clusterIP)", config.EndpointPods[0].Name, config.ClusterIP, e2enetwork.ClusterUDPPort))
 			config.DialFromEndpointContainer("udp", config.ClusterIP, e2enetwork.ClusterUDPPort, config.MaxTries, 0, config.EndpointHostnames())
 
@@ -254,7 +272,7 @@ var _ = SIGDescribe("Networking", func() {
 			ginkgo.By(fmt.Sprintf("dialing(http) %v (node) --> %v:%v (nodeIP)", config.NodeIP, config.NodeIP, config.NodeHTTPPort))
 			config.DialFromNode("http", config.NodeIP, config.NodeHTTPPort, config.MaxTries, 0, config.EndpointHostnames())
 
-			config.DeleteNodePortService()
+			config.DeleteNodePortHTTPService()
 
 			ginkgo.By(fmt.Sprintf("dialing(http) %v (node) --> %v:%v (nodeIP)", config.NodeIP, config.NodeIP, config.NodeHTTPPort))
 			config.DialFromNode("http", config.NodeIP, config.NodeHTTPPort, config.MaxTries, config.MaxTries, sets.NewString())
@@ -266,7 +284,7 @@ var _ = SIGDescribe("Networking", func() {
 			ginkgo.By(fmt.Sprintf("dialing(udp) %v (node) --> %v:%v (nodeIP)", config.NodeIP, config.NodeIP, config.NodeUDPPort))
 			config.DialFromNode("udp", config.NodeIP, config.NodeUDPPort, config.MaxTries, 0, config.EndpointHostnames())
 
-			config.DeleteNodePortService()
+			config.DeleteNodePortUDPService()
 
 			ginkgo.By(fmt.Sprintf("dialing(udp) %v (node) --> %v:%v (nodeIP)", config.NodeIP, config.NodeIP, config.NodeUDPPort))
 			config.DialFromNode("udp", config.NodeIP, config.NodeUDPPort, config.MaxTries, config.MaxTries, sets.NewString())
