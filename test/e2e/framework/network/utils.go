@@ -65,6 +65,7 @@ const (
 	testPodName                = "test-container-pod"
 	hostTestPodName            = "host-test-container-pod"
 	nodePortServiceName        = "node-port-service"
+	secondNodePortServiceName  = "second-node-port-service"
 	sessionAffinityServiceName = "session-affinity-service"
 	// wait time between poll attempts of a Service vip and/or nodePort.
 	// coupled with testTries to produce a net timeout value.
@@ -616,6 +617,27 @@ func (config *NetworkingTestConfig) createNodePortService(selector map[string]st
 
 func (config *NetworkingTestConfig) createSessionAffinityService(selector map[string]string) {
 	config.SessionAffinityService = config.createService(config.createNodePortServiceSpec(sessionAffinityServiceName, selector, true))
+}
+
+func (config *NetworkingTestConfig) CreateSecondNodePortService() (*v1.Service, int, int) {
+	svc := config.createService(config.createNodePortServiceSpec(secondNodePortServiceName, config.NodePortService.Spec.Selector, false))
+
+	err := framework.WaitForServiceEndpointsNum(config.f.ClientSet, config.Namespace, secondNodePortServiceName, len(config.EndpointPods), time.Second, wait.ForeverTestTimeout)
+	framework.ExpectNoError(err, "failed to validate endpoints for service %s in namespace: %s", secondNodePortServiceName, config.Namespace)
+
+	var httpPort, udpPort int
+	for _, p := range svc.Spec.Ports {
+		switch p.Protocol {
+		case v1.ProtocolUDP:
+			udpPort = int(p.NodePort)
+		case v1.ProtocolTCP:
+			httpPort = int(p.NodePort)
+		default:
+			continue
+		}
+	}
+
+	return svc, httpPort, udpPort
 }
 
 // DeleteNodePortService deletes NodePort service.
