@@ -26,6 +26,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2enetwork "k8s.io/kubernetes/test/e2e/framework/network"
@@ -166,11 +167,20 @@ func execSourceIPTest(sourcePod v1.Pod, targetAddr string) (string, string) {
 	return sourcePod.Status.PodIP, host
 }
 
-// CreateSecondNodePortService duplicates the existing NodePortService in the config and creates a second service
-// with the same spec but different name.
+// CreateSecondNodePortService creates a service with the same selector as config.NodePortService and UDP Port
 func CreateSecondNodePortService(f *framework.Framework, config *e2enetwork.NetworkingTestConfig) (*v1.Service, int, int) {
-	svc := config.NodePortService.DeepCopy()
-	svc.Name = secondNodePortSvcName
+	svc := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: secondNodePortSvcName,
+		},
+		Spec: v1.ServiceSpec{
+			Type: v1.ServiceTypeNodePort,
+			Ports: []v1.ServicePort{
+				{Port: e2enetwork.ClusterUDPPort, Name: "udp", Protocol: v1.ProtocolUDP, TargetPort: intstr.FromInt(e2enetwork.EndpointUDPPort)},
+			},
+			Selector: config.NodePortService.Spec.Selector,
+		},
+	}
 
 	createdService := config.CreateService(svc)
 
