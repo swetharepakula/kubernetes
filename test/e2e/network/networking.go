@@ -226,7 +226,7 @@ var _ = SIGDescribe("Networking", func() {
 			config.DialFromEndpointContainer("udp", config.NodeIP, config.NodeUDPPort, config.MaxTries, 0, config.EndpointHostnames())
 		})
 
-		ginkgo.It("should function for multiple endpoint-Service", func() {
+		ginkgo.It("should function for multiple-endpoint-Service", func() {
 			config := e2enetwork.NewNetworkingTestConfig(f, false, false)
 			ginkgo.By("creating a second service with same selector")
 			svc2, udpPort := CreateSecondNodePortService(f, config)

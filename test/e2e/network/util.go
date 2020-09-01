@@ -188,7 +188,7 @@ func CreateSecondNodePortService(f *framework.Framework, config *e2enetwork.Netw
 	framework.ExpectNoError(err, "failed to validate endpoints for service %s in namespace: %s", secondNodePortSvcName, config.Namespace)
 
 	var udpPort int
-	for _, p := range svc.Spec.Ports {
+	for _, p := range createdService.Spec.Ports {
 		switch p.Protocol {
 		case v1.ProtocolUDP:
 			udpPort = int(p.NodePort)
