@@ -229,7 +229,7 @@ var _ = SIGDescribe("Networking", func() {
 		ginkgo.It("should function for multiple endpoint-Service", func() {
 			config := e2enetwork.NewNetworkingTestConfig(f, false, false)
 			ginkgo.By("creating a second service with same selector")
-			svc2, _, udpPort := CreateSecondNodePortService(f, config)
+			svc2, udpPort := CreateSecondNodePortService(f, config)
 
 			// original service should work
 			ginkgo.By(fmt.Sprintf("dialing(udp) %v (endpoint) --> %v:%v (config.clusterIP)", config.EndpointPods[0].Name, config.ClusterIP, e2enetwork.ClusterUDPPort))

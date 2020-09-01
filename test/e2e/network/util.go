@@ -167,8 +167,8 @@ func execSourceIPTest(sourcePod v1.Pod, targetAddr string) (string, string) {
 	return sourcePod.Status.PodIP, host
 }
 
-// CreateSecondNodePortService creates a service with the same selector as config.NodePortService and UDP Port
-func CreateSecondNodePortService(f *framework.Framework, config *e2enetwork.NetworkingTestConfig) (*v1.Service, int, int) {
+// CreateSecondNodePortService creates a service with the same selector as config.NodePortService and same UDP Port
+func CreateSecondNodePortService(f *framework.Framework, config *e2enetwork.NetworkingTestConfig) (*v1.Service, int) {
 	svc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: secondNodePortSvcName,
@@ -187,17 +187,15 @@ func CreateSecondNodePortService(f *framework.Framework, config *e2enetwork.Netw
 	err := framework.WaitForServiceEndpointsNum(f.ClientSet, config.Namespace, secondNodePortSvcName, len(config.EndpointPods), time.Second, wait.ForeverTestTimeout)
 	framework.ExpectNoError(err, "failed to validate endpoints for service %s in namespace: %s", secondNodePortSvcName, config.Namespace)
 
-	var httpPort, udpPort int
+	var udpPort int
 	for _, p := range svc.Spec.Ports {
 		switch p.Protocol {
 		case v1.ProtocolUDP:
 			udpPort = int(p.NodePort)
-		case v1.ProtocolTCP:
-			httpPort = int(p.NodePort)
 		default:
 			continue
 		}
 	}
 
-	return createdService, httpPort, udpPort
+	return createdService, udpPort
 }
