@@ -612,32 +612,11 @@ func (config *NetworkingTestConfig) createNodePortServiceSpec(svcName string, se
 }
 
 func (config *NetworkingTestConfig) createNodePortService(selector map[string]string) {
-	config.NodePortService = config.createService(config.createNodePortServiceSpec(nodePortServiceName, selector, false))
+	config.NodePortService = config.CreateService(config.createNodePortServiceSpec(nodePortServiceName, selector, false))
 }
 
 func (config *NetworkingTestConfig) createSessionAffinityService(selector map[string]string) {
-	config.SessionAffinityService = config.createService(config.createNodePortServiceSpec(sessionAffinityServiceName, selector, true))
-}
-
-func (config *NetworkingTestConfig) CreateSecondNodePortService() (*v1.Service, int, int) {
-	svc := config.createService(config.createNodePortServiceSpec(secondNodePortServiceName, config.NodePortService.Spec.Selector, false))
-
-	err := framework.WaitForServiceEndpointsNum(config.f.ClientSet, config.Namespace, secondNodePortServiceName, len(config.EndpointPods), time.Second, wait.ForeverTestTimeout)
-	framework.ExpectNoError(err, "failed to validate endpoints for service %s in namespace: %s", secondNodePortServiceName, config.Namespace)
-
-	var httpPort, udpPort int
-	for _, p := range svc.Spec.Ports {
-		switch p.Protocol {
-		case v1.ProtocolUDP:
-			udpPort = int(p.NodePort)
-		case v1.ProtocolTCP:
-			httpPort = int(p.NodePort)
-		default:
-			continue
-		}
-	}
-
-	return svc, httpPort, udpPort
+	config.SessionAffinityService = config.CreateService(config.createNodePortServiceSpec(sessionAffinityServiceName, selector, true))
 }
 
 // DeleteNodePortService deletes NodePort service.
@@ -673,7 +652,8 @@ func (config *NetworkingTestConfig) createTestPods() {
 	}
 }
 
-func (config *NetworkingTestConfig) createService(serviceSpec *v1.Service) *v1.Service {
+// Creates the provided service in config.Namespace and returns created service
+func (config *NetworkingTestConfig) CreateService(serviceSpec *v1.Service) *v1.Service {
 	_, err := config.getServiceClient().Create(context.TODO(), serviceSpec, metav1.CreateOptions{})
 	framework.ExpectNoError(err, fmt.Sprintf("Failed to create %s service: %v", serviceSpec.Name, err))
 

@@ -33,6 +33,9 @@ import (
 	imageutils "k8s.io/kubernetes/test/utils/image"
 )
 
+//secondNodePortSvcName is the name of the secondary node port service
+const secondNodePortSvcName = "second-node-port-service"
+
 var (
 	// agnHostImage is the image URI of AgnHost
 	agnHostImage = imageutils.GetE2EImage(imageutils.Agnhost)
@@ -161,4 +164,30 @@ func execSourceIPTest(sourcePod v1.Pod, targetAddr string) (string, string) {
 		framework.Failf("exec pod returned unexpected stdout: [%v]\n", stdout)
 	}
 	return sourcePod.Status.PodIP, host
+}
+
+// CreateSecondNodePortService duplicates the existing NodePortService in the config and creates a second service
+// with the same spec but different name.
+func CreateSecondNodePortService(f *framework.Framework, config *e2enetwork.NetworkingTestConfig) (*v1.Service, int, int) {
+	svc := config.NodePortService.DeepCopy()
+	svc.Name = secondNodePortSvcName
+
+	createdService := config.CreateService(svc)
+
+	err := framework.WaitForServiceEndpointsNum(f.ClientSet, config.Namespace, secondNodePortSvcName, len(config.EndpointPods), time.Second, wait.ForeverTestTimeout)
+	framework.ExpectNoError(err, "failed to validate endpoints for service %s in namespace: %s", secondNodePortSvcName, config.Namespace)
+
+	var httpPort, udpPort int
+	for _, p := range svc.Spec.Ports {
+		switch p.Protocol {
+		case v1.ProtocolUDP:
+			udpPort = int(p.NodePort)
+		case v1.ProtocolTCP:
+			httpPort = int(p.NodePort)
+		default:
+			continue
+		}
+	}
+
+	return createdService, httpPort, udpPort
 }
