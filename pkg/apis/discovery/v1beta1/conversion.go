@@ -22,7 +22,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/discovery"
 )
 
-type EndpointSiceTopology struct {
+type EndpointSliceTopology struct {
 	Strings  []string
 	Topology []map[int]int
 }
@@ -47,5 +47,5 @@ func Convert_discovery_Endpoint_To_v1beta1_Endpoint(in *discovery.Endpoint, out 
 }
 
 func add_endpoint_topology_map(endpointTop map[string]string, epsTop EndpointSliceTopology) EndpointSliceTopology {
-	return ""
+	return EndpointSliceTopology{}
 }

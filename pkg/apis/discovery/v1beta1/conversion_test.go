@@ -35,13 +35,13 @@ func TestEndpointTopologyConverstion(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.desc, func(t *testing.T) {
-			convertedInternal := networking.EndpointSlice{}
+			convertedInternal := discovery.EndpointSlice{}
 			require.NoError(t, Convert_v1beta1_EndpointSlice_To_discovery_EndpointSlice(&tc.external, &convertedInternal, nil))
-			assert.Equal(t, test.internal, convertedInternal, "v1beta1.EndpointSlice -> discovery.EndpointSlice")
+			assert.Equal(t, tc.internal, convertedInternal, "v1beta1.EndpointSlice -> discovery.EndpointSlice")
 
 			convertedV1beta1 := v1beta1.EndpointSlice{}
 			require.NoError(t, Convert_discovery_EndpointSlice_To_v1beta1_EndpointSlice(&tc.internal, &convertedV1beta1, nil))
-			assert.Equal(t, test.external, convertedV1beta1, "discovery.EndpointSlice -> v1beta1.EndpointSlice")
+			assert.Equal(t, tc.external, convertedV1beta1, "discovery.EndpointSlice -> v1beta1.EndpointSlice")
 		})
 
 	}
@@ -72,13 +72,13 @@ func TestEndpointZoneConverstion(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.desc, func(t *testing.T) {
-			convertedInternal := networking.EndpointSlice{}
+			convertedInternal := discovery.Endpoint{}
 			require.NoError(t, Convert_v1beta1_Endpoint_To_discovery_Endpoint(&tc.external, &convertedInternal, nil))
-			assert.Equal(t, test.internal, convertedInternal, "v1beta1.Endpoint -> discovery.Endpoint")
+			assert.Equal(t, tc.internal, convertedInternal, "v1beta1.Endpoint -> discovery.Endpoint")
 
-			convertedV1beta1 := v1beta1.EndpointSlice{}
+			convertedV1beta1 := v1beta1.Endpoint{}
 			require.NoError(t, Convert_discovery_Endpoint_To_v1beta1_Endpoint(&tc.internal, &convertedV1beta1, nil))
-			assert.Equal(t, test.external, convertedV1beta1, "discovery.Endpoint -> v1beta1.Endpoint")
+			assert.Equal(t, tc.external, convertedV1beta1, "discovery.Endpoint -> v1beta1.Endpoint")
 		})
 
 	}
