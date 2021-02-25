@@ -21,7 +21,7 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -41,18 +41,16 @@ func (in *Endpoint) DeepCopyInto(out *Endpoint) {
 	}
 	if in.TargetRef != nil {
 		in, out := &in.TargetRef, &out.TargetRef
-		*out = new(v1.ObjectReference)
+		*out = new(corev1.ObjectReference)
 		**out = **in
-	}
-	if in.Topology != nil {
-		in, out := &in.Topology, &out.Topology
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
 	}
 	if in.NodeName != nil {
 		in, out := &in.NodeName, &out.NodeName
+		*out = new(string)
+		**out = **in
+	}
+	if in.Zone != nil {
+		in, out := &in.Zone, &out.Zone
 		*out = new(string)
 		**out = **in
 	}
@@ -110,7 +108,7 @@ func (in *EndpointPort) DeepCopyInto(out *EndpointPort) {
 	}
 	if in.Protocol != nil {
 		in, out := &in.Protocol, &out.Protocol
-		*out = new(v1.Protocol)
+		*out = new(corev1.Protocol)
 		**out = **in
 	}
 	if in.Port != nil {
