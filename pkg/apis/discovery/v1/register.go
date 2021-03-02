@@ -17,7 +17,7 @@ limitations under the License.
 package v1
 
 import (
-	discoveryv1beta1 "k8s.io/api/discovery/v1beta1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -33,7 +33,7 @@ func Resource(resource string) schema.GroupResource {
 }
 
 var (
-	localSchemeBuilder = &discoveryv1beta1.SchemeBuilder
+	localSchemeBuilder = &discoveryv1.SchemeBuilder
 	AddToScheme        = localSchemeBuilder.AddToScheme
 )
 
