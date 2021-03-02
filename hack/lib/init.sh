@@ -84,7 +84,6 @@ certificates.k8s.io/v1 \
 certificates.k8s.io/v1beta1 \
 coordination.k8s.io/v1beta1 \
 coordination.k8s.io/v1 \
-discovery.k8s.io/v1alpha1 \
 discovery.k8s.io/v1beta1 \
 discovery.k8s.io/v1 \
 extensions/v1beta1 \

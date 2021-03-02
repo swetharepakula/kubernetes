@@ -685,6 +685,7 @@ func DefaultAPIResourceConfigSource() *serverstorage.ResourceConfig {
 		certificatesapiv1beta1.SchemeGroupVersion,
 		coordinationapiv1.SchemeGroupVersion,
 		coordinationapiv1beta1.SchemeGroupVersion,
+		discoveryv1.SchemeGroupVersion,
 		discoveryv1beta1.SchemeGroupVersion,
 		eventsv1.SchemeGroupVersion,
 		eventsv1beta1.SchemeGroupVersion,
