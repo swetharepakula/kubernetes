@@ -74,7 +74,7 @@ func TestEndpointTopologyConverstion(t *testing.T) {
 						v1beta1Topology: `{"s":["key1","key2","key3","val1","val2","val3","val4","val5","val6"],"t":[{"0":3,"1":4,"2":5},{"0":6,"1":7,"2":8}]}`,
 					},
 				},
-				Endpoints: []discovery.Endpoint{discovery.Endpoint{}, discovery.Endpoint{}},
+				Endpoints: []discovery.Endpoint{{}, {}},
 			},
 		},
 		{

@@ -90,8 +90,8 @@ type Interface interface {
 	CoordinationV1beta1() coordinationv1beta1.CoordinationV1beta1Interface
 	CoordinationV1() coordinationv1.CoordinationV1Interface
 	CoreV1() corev1.CoreV1Interface
-	DiscoveryV1beta1() discoveryv1beta1.DiscoveryV1beta1Interface
 	DiscoveryV1() discoveryv1.DiscoveryV1Interface
+	DiscoveryV1beta1() discoveryv1beta1.DiscoveryV1beta1Interface
 	EventsV1() eventsv1.EventsV1Interface
 	EventsV1beta1() eventsv1beta1.EventsV1beta1Interface
 	ExtensionsV1beta1() extensionsv1beta1.ExtensionsV1beta1Interface
@@ -138,8 +138,8 @@ type Clientset struct {
 	coordinationV1beta1          *coordinationv1beta1.CoordinationV1beta1Client
 	coordinationV1               *coordinationv1.CoordinationV1Client
 	coreV1                       *corev1.CoreV1Client
-	discoveryV1beta1             *discoveryv1beta1.DiscoveryV1beta1Client
 	discoveryV1                  *discoveryv1.DiscoveryV1Client
+	discoveryV1beta1             *discoveryv1beta1.DiscoveryV1beta1Client
 	eventsV1                     *eventsv1.EventsV1Client
 	eventsV1beta1                *eventsv1beta1.EventsV1beta1Client
 	extensionsV1beta1            *extensionsv1beta1.ExtensionsV1beta1Client
@@ -262,14 +262,14 @@ func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 	return c.coreV1
 }
 
-// DiscoveryV1beta1 retrieves the DiscoveryV1beta1Client
-func (c *Clientset) DiscoveryV1beta1() discoveryv1beta1.DiscoveryV1beta1Interface {
-	return c.discoveryV1beta1
-}
-
 // DiscoveryV1 retrieves the DiscoveryV1Client
 func (c *Clientset) DiscoveryV1() discoveryv1.DiscoveryV1Interface {
 	return c.discoveryV1
+}
+
+// DiscoveryV1beta1 retrieves the DiscoveryV1beta1Client
+func (c *Clientset) DiscoveryV1beta1() discoveryv1beta1.DiscoveryV1beta1Interface {
+	return c.discoveryV1beta1
 }
 
 // EventsV1 retrieves the EventsV1Client
@@ -473,11 +473,11 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	cs.discoveryV1beta1, err = discoveryv1beta1.NewForConfig(&configShallowCopy)
+	cs.discoveryV1, err = discoveryv1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.discoveryV1, err = discoveryv1.NewForConfig(&configShallowCopy)
+	cs.discoveryV1beta1, err = discoveryv1beta1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -593,8 +593,8 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 	cs.coordinationV1beta1 = coordinationv1beta1.NewForConfigOrDie(c)
 	cs.coordinationV1 = coordinationv1.NewForConfigOrDie(c)
 	cs.coreV1 = corev1.NewForConfigOrDie(c)
-	cs.discoveryV1beta1 = discoveryv1beta1.NewForConfigOrDie(c)
 	cs.discoveryV1 = discoveryv1.NewForConfigOrDie(c)
+	cs.discoveryV1beta1 = discoveryv1beta1.NewForConfigOrDie(c)
 	cs.eventsV1 = eventsv1.NewForConfigOrDie(c)
 	cs.eventsV1beta1 = eventsv1beta1.NewForConfigOrDie(c)
 	cs.extensionsV1beta1 = extensionsv1beta1.NewForConfigOrDie(c)
@@ -643,8 +643,8 @@ func New(c rest.Interface) *Clientset {
 	cs.coordinationV1beta1 = coordinationv1beta1.New(c)
 	cs.coordinationV1 = coordinationv1.New(c)
 	cs.coreV1 = corev1.New(c)
-	cs.discoveryV1beta1 = discoveryv1beta1.New(c)
 	cs.discoveryV1 = discoveryv1.New(c)
+	cs.discoveryV1beta1 = discoveryv1beta1.New(c)
 	cs.eventsV1 = eventsv1.New(c)
 	cs.eventsV1beta1 = eventsv1beta1.New(c)
 	cs.extensionsV1beta1 = extensionsv1beta1.New(c)

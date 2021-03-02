@@ -258,14 +258,14 @@ func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 	return &fakecorev1.FakeCoreV1{Fake: &c.Fake}
 }
 
-// DiscoveryV1beta1 retrieves the DiscoveryV1beta1Client
-func (c *Clientset) DiscoveryV1beta1() discoveryv1beta1.DiscoveryV1beta1Interface {
-	return &fakediscoveryv1beta1.FakeDiscoveryV1beta1{Fake: &c.Fake}
-}
-
 // DiscoveryV1 retrieves the DiscoveryV1Client
 func (c *Clientset) DiscoveryV1() discoveryv1.DiscoveryV1Interface {
 	return &fakediscoveryv1.FakeDiscoveryV1{Fake: &c.Fake}
+}
+
+// DiscoveryV1beta1 retrieves the DiscoveryV1beta1Client
+func (c *Clientset) DiscoveryV1beta1() discoveryv1beta1.DiscoveryV1beta1Interface {
+	return &fakediscoveryv1beta1.FakeDiscoveryV1beta1{Fake: &c.Fake}
 }
 
 // EventsV1 retrieves the EventsV1Client
