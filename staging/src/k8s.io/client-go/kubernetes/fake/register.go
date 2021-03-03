@@ -39,6 +39,7 @@ import (
 	coordinationv1 "k8s.io/api/coordination/v1"
 	coordinationv1beta1 "k8s.io/api/coordination/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	discoveryv1beta1 "k8s.io/api/discovery/v1beta1"
 	eventsv1 "k8s.io/api/events/v1"
 	eventsv1beta1 "k8s.io/api/events/v1beta1"
@@ -91,6 +92,7 @@ var localSchemeBuilder = runtime.SchemeBuilder{
 	coordinationv1beta1.AddToScheme,
 	coordinationv1.AddToScheme,
 	corev1.AddToScheme,
+	discoveryv1.AddToScheme,
 	discoveryv1beta1.AddToScheme,
 	eventsv1.AddToScheme,
 	eventsv1beta1.AddToScheme,
