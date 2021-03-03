@@ -64,8 +64,6 @@ import (
 	fakecoordinationv1beta1 "k8s.io/client-go/kubernetes/typed/coordination/v1beta1/fake"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	fakecorev1 "k8s.io/client-go/kubernetes/typed/core/v1/fake"
-	discoveryv1alpha1 "k8s.io/client-go/kubernetes/typed/discovery/v1alpha1"
-	fakediscoveryv1alpha1 "k8s.io/client-go/kubernetes/typed/discovery/v1alpha1/fake"
 	discoveryv1beta1 "k8s.io/client-go/kubernetes/typed/discovery/v1beta1"
 	fakediscoveryv1beta1 "k8s.io/client-go/kubernetes/typed/discovery/v1beta1/fake"
 	eventsv1 "k8s.io/client-go/kubernetes/typed/events/v1"
@@ -256,11 +254,6 @@ func (c *Clientset) CoordinationV1() coordinationv1.CoordinationV1Interface {
 // CoreV1 retrieves the CoreV1Client
 func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 	return &fakecorev1.FakeCoreV1{Fake: &c.Fake}
-}
-
-// DiscoveryV1alpha1 retrieves the DiscoveryV1alpha1Client
-func (c *Clientset) DiscoveryV1alpha1() discoveryv1alpha1.DiscoveryV1alpha1Interface {
-	return &fakediscoveryv1alpha1.FakeDiscoveryV1alpha1{Fake: &c.Fake}
 }
 
 // DiscoveryV1beta1 retrieves the DiscoveryV1beta1Client
