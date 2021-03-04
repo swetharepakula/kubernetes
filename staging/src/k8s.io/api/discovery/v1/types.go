@@ -23,8 +23,7 @@ import (
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:prerelease-lifecycle-gen:introduced=1.16
-// +k8s:prerelease-lifecycle-gen:deprecated=1.22
+// +k8s:prerelease-lifecycle-gen:introduced=1.21
 
 // EndpointSlice represents a subset of the endpoints that implement a service.
 // For a given service there may be multiple EndpointSlice objects, selected by
@@ -91,10 +90,14 @@ type Endpoint struct {
 	// +optional
 	TargetRef *v1.ObjectReference `json:"targetRef,omitempty" protobuf:"bytes,4,opt,name=targetRef"`
 
-	// topology was a beta feature for Endpoint to store arbitrary topology
-	// information. The values of this field are persisted as an anotation on
-	// on the EndpointSlice starting in v1.
-	// +k8s:deprecated=topology,protobuf=5
+	// deprecatedTopology contains topology information part of the v1beta1
+	// API. This field is deprecated, and will be removed when the v1beta1
+	// API is removed (no sooner than kubernetes v1.24).  While this field can
+	// hold values, it is not writable through the v1 API, and any attempts to
+	// write to it will be silently ignored. Topology information can be found
+	// in the zone and nodeName fields instead.
+	// +optional
+	DeprecatedTopology map[string]string `json:"deprecatedTopology,omitempty" protobuf:"bytes,5,opt,name=deprecatedTopology"`
 
 	// nodeName represents the name of the Node hosting this endpoint. This can
 	// be used to determine endpoints local to a Node. This field can be enabled
@@ -162,8 +165,7 @@ type EndpointPort struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:prerelease-lifecycle-gen:introduced=1.16
-// +k8s:prerelease-lifecycle-gen:deprecated=1.22
+// +k8s:prerelease-lifecycle-gen:introduced=1.21
 
 // EndpointSliceList represents a list of endpoint slices
 type EndpointSliceList struct {

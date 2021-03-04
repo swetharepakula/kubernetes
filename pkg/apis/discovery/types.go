@@ -87,6 +87,11 @@ type Endpoint struct {
 	// endpoint.
 	// +optional
 	TargetRef *api.ObjectReference
+	// deprecatedTopology is deprecated and only retained for round-trip
+	// compatbility with v1beta1 Topology field.  When v1beta1 is removed, this
+	// should be removed, too.
+	// +optional
+	DeprecatedTopology map[string]string
 	// nodeName represents the name of the Node hosting this endpoint. This can
 	// be used to determine endpoints local to a Node. This field can be enabled
 	// with the EndpointSliceNodeName feature gate.
