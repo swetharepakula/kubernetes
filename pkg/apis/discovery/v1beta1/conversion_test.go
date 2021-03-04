@@ -26,22 +26,17 @@ import (
 	"k8s.io/kubernetes/pkg/apis/discovery"
 )
 
-var (
-	zoneA = "zoneA"
-)
-
 func TestEndpointZoneConverstion(t *testing.T) {
+	var zone1 = "zone1"
 	testcases := []struct {
-		desc             string
-		external         v1beta1.Endpoint
-		expectedExternal v1beta1.Endpoint
-		internal         discovery.Endpoint
+		desc     string
+		external v1beta1.Endpoint
+		internal discovery.Endpoint
 	}{
 		{
-			desc:             "no topology field",
-			external:         v1beta1.Endpoint{},
-			expectedExternal: v1beta1.Endpoint{},
-			internal:         discovery.Endpoint{},
+			desc:     "no topology field",
+			external: v1beta1.Endpoint{},
+			internal: discovery.Endpoint{},
 		},
 		{
 			desc: "non empty topology map, but no zone",
@@ -50,23 +45,37 @@ func TestEndpointZoneConverstion(t *testing.T) {
 					"key1": "val1",
 				},
 			},
-			expectedExternal: v1beta1.Endpoint{},
-			internal:         discovery.Endpoint{},
+			internal: discovery.Endpoint{
+				DeprecatedTopology: map[string]string{
+					"key1": "val1",
+				},
+			},
 		},
 		{
 			desc: "non empty topology map, with zone",
 			external: v1beta1.Endpoint{
 				Topology: map[string]string{
 					"key1":                   "val1",
-					corev1.LabelTopologyZone: zoneA,
+					corev1.LabelTopologyZone: zone1,
 				},
 			},
-			expectedExternal: v1beta1.Endpoint{
+			internal: discovery.Endpoint{
+				DeprecatedTopology: map[string]string{
+					"key1": "val1",
+				},
+				Zone: &zone1,
+			},
+		},
+		{
+			desc: "only zone in topology map",
+			external: v1beta1.Endpoint{
 				Topology: map[string]string{
-					corev1.LabelTopologyZone: zoneA,
+					corev1.LabelTopologyZone: zone1,
 				},
 			},
-			internal: discovery.Endpoint{Zone: &zoneA},
+			internal: discovery.Endpoint{
+				Zone: &zone1,
+			},
 		},
 	}
 
@@ -78,7 +87,7 @@ func TestEndpointZoneConverstion(t *testing.T) {
 
 			convertedV1beta1 := v1beta1.Endpoint{}
 			require.NoError(t, Convert_discovery_Endpoint_To_v1beta1_Endpoint(&tc.internal, &convertedV1beta1, nil))
-			assert.Equal(t, tc.expectedExternal, convertedV1beta1, "discovery.Endpoint -> v1beta1.Endpoint")
+			assert.Equal(t, tc.external, convertedV1beta1, "discovery.Endpoint -> v1beta1.Endpoint")
 		})
 	}
 }
