@@ -55,7 +55,7 @@ func (endpointSliceStrategy) PrepareForCreate(ctx context.Context, obj runtime.O
 	endpointSlice.Generation = 1
 
 	dropDisabledFieldsOnCreate(endpointSlice)
-	dropTopologyOnV1(ctx, endpointSlice)
+	dropTopologyOnV1(ctx, nil, endpointSlice)
 }
 
 // PrepareForUpdate clears fields that are not allowed to be set by end users on update.
@@ -78,7 +78,7 @@ func (endpointSliceStrategy) PrepareForUpdate(ctx context.Context, obj, old runt
 	oldEPS.ObjectMeta = ogOldMeta
 
 	dropDisabledFieldsOnUpdate(oldEPS, newEPS)
-	dropTopologyOnV1(ctx, newEPS)
+	dropTopologyOnV1(ctx, oldEPS, newEPS)
 }
 
 // Validate validates a new EndpointSlice.
@@ -165,13 +165,13 @@ func dropDisabledFieldsOnUpdate(oldEPS, newEPS *discovery.EndpointSlice) {
 
 // dropTopologyOnV1 on V1 request wipes the DeprecatedTopology field  and copies
 // the NodeName value into DeprecatedTopology
-func dropTopologyOnV1(ctx context.Context, eps *discovery.EndpointSlice) {
+func dropTopologyOnV1(ctx context.Context, oldEPS, newEPS *discovery.EndpointSlice) {
 	if info, ok := genericapirequest.RequestInfoFrom(ctx); ok {
 		requestGV := schema.GroupVersion{Group: info.APIGroup, Version: info.APIVersion}
 		if requestGV == discoveryv1.SchemeGroupVersion {
-			for i := range eps.Endpoints {
+			for i := range newEPS.Endpoints {
 				//Silently wipe deprecatedTopology
-				ep := &eps.Endpoints[i]
+				ep := &newEPS.Endpoints[i]
 				ep.DeprecatedTopology = nil
 
 				// Set topology[hostname] to match NodeName for compatibility with old clients

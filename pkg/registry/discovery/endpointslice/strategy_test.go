@@ -33,6 +33,7 @@ func Test_dropTopologyOnV1(t *testing.T) {
 	testcases := []struct {
 		name        string
 		v1Request   bool
+		oldEPS      *discovery.EndpointSlice
 		eps         *discovery.EndpointSlice
 		expectedEPS *discovery.EndpointSlice
 	}{
@@ -215,7 +216,7 @@ func Test_dropTopologyOnV1(t *testing.T) {
 				ctx = genericapirequest.WithRequestInfo(genericapirequest.NewContext(), &genericapirequest.RequestInfo{APIGroup: "discovery.k8s.io", APIVersion: "v1", Resource: "endpointslices"})
 			}
 
-			dropTopologyOnV1(ctx, tc.eps)
+			dropTopologyOnV1(ctx, tc.oldEPS, tc.eps)
 			if !apiequality.Semantic.DeepEqual(tc.eps, tc.expectedEPS) {
 				t.Logf("actual endpointslice: %v", tc.eps)
 				t.Logf("expected endpointslice: %v", tc.expectedEPS)
